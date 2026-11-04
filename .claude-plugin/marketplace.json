@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "fieldtrip-linkedin-tracker",
+  "description": "Fieldtrip webinar-lead LinkedIn tracker. Prepares HeyReach-ready lead CSVs from webinar registrant exports (with ColdIQ enrichment) and reconciles each user's LinkedIn inbox, read-only, against one shared Notion database.",
+  "owner": { "name": "Katarina Misovic" },
+  "plugins": [
+    {
+      "name": "fieldtrip-linkedin-tracker",
+      "description": "/fieldtrip-linkedin-tracker: import webinar registrants into HeyReach-ready CSVs and a shared Notion database, then track who connected and replied from your LinkedIn inbox. Read-only on LinkedIn: a bundled hook blocks every send tool.",
+      "author": { "name": "Katarina Misovic" },
+      "category": "sales",
+      "source": "./plugins/fieldtrip-linkedin-tracker"
+    }
+  ]
+}

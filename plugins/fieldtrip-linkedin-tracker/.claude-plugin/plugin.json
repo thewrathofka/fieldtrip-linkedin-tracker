@@ -1,0 +1,7 @@
+{
+  "name": "fieldtrip-linkedin-tracker",
+  "version": "0.1.0",
+  "description": "Fieldtrip webinar-lead LinkedIn tracker. Turns webinar registrant CSVs into HeyReach-ready attended / no show CSVs (ColdIQ enrichment for missing LinkedIn URLs), keeps one shared Notion database of leads, and reconciles each user's LinkedIn inbox read-only, @mentioning them on new replies. Never sends anything on LinkedIn.",
+  "author": { "name": "Katarina Misovic" },
+  "keywords": ["linkedin", "notion", "webinar", "heyreach", "coldiq", "lead tracker", "sales"]
+}
