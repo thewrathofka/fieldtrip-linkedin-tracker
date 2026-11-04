@@ -2,10 +2,12 @@
 
 A one-plugin Claude Code marketplace for Fieldtrip: the **`/fieldtrip-linkedin-tracker`** webinar-lead LinkedIn tracker.
 
-It does two things:
+Each run:
 
-1. **Import a webinar.** Takes a registrant export (Riverside CSV), splits it into attended and no show, finds missing LinkedIn URLs with the ColdIQ connector, writes HeyReach-ready CSVs (`[Webinar] attended.csv`, `[Webinar] no show.csv`), attaches them to the shared Notion page, and adds every lead to the shared Notion database.
-2. **Reconcile your inbox.** Reads your LinkedIn inbox (read-only), opens only threads with people on the lead list, and marks who connected and who replied. When someone replies, it @mentions you on their row.
+1. Reads the shared Notion page **"Webinar Leads LinkedIn Tracking"** (inBeat workspace): the lead lists at the top, the Webinar Leads database, and the Run log (to see when the last run was).
+2. Adds anyone from the lead lists who isn't in the database yet, marking whether their LinkedIn was found (`LinkedIn enriched successfully?`).
+3. Reads **your** LinkedIn inbox, read-only, and opens only conversations with people on those lead lists.
+4. Marks who connected and who replied, @mentions you on new replies, and writes a Run log row.
 
 It never sends anything on LinkedIn. People send connection requests and messages themselves (or through HeyReach).
 
@@ -18,13 +20,12 @@ In an interactive `claude` terminal:
 /plugin install fieldtrip-linkedin-tracker@fieldtrip-linkedin-tracker
 ```
 
-Restart Claude Code (or reload plugins) so the bundled `linkedin` MCP server starts. Run it with `/fieldtrip-linkedin-tracker`.
+Restart Claude Code (or reload plugins) so the bundled `linkedin` MCP server starts, then run `/fieldtrip-linkedin-tracker`. On your first run it asks who you are, checks your LinkedIn is connected, and adds you to the `Users` list.
 
 ### What each person needs
 
-- Access to the inBeat Notion workspace (the "Webinar Leads LinkedIn Tracking" page).
+- Access to the inBeat Notion workspace.
 - Their own LinkedIn login for the bundled LinkedIn MCP.
-- The ColdIQ connector, for import runs.
 - `uv` / `uvx` and `python3` installed.
 
 ## Layout
