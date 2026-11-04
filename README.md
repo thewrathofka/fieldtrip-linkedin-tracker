@@ -5,9 +5,10 @@ A one-plugin Claude Code marketplace for Fieldtrip: the **`/fieldtrip-linkedin-t
 Each run:
 
 1. Reads the shared Notion page **"Webinar Leads LinkedIn Tracking"** (inBeat workspace): the lead lists at the top, the Webinar Leads database, and the Run log (to see when the last run was).
-2. Adds anyone from the lead lists who isn't in the database yet, marking whether their LinkedIn was found (`LinkedIn enriched successfully?`).
-3. Reads **your** LinkedIn inbox, read-only, and opens only conversations with people on those lead lists.
-4. Marks who connected and who replied, @mentions you on new replies, and writes a Run log row.
+2. If a lead list has only the raw export, finds LinkedIn URLs with ColdIQ (after asking, since it costs credits) and builds HeyReach-ready CSVs: `[Webinar] attended.csv` and `[Webinar] no show.csv`.
+3. Adds anyone from the lead lists who isn't in the database yet, marking whether their LinkedIn was found (`LinkedIn enriched successfully?`).
+4. Reads **your** LinkedIn inbox, read-only, and opens only conversations with people on those lead lists.
+5. Marks who connected and who replied, @mentions you on new replies, and writes a Run log row.
 
 It never sends anything on LinkedIn. People send connection requests and messages themselves (or through HeyReach).
 
@@ -26,6 +27,7 @@ Restart Claude Code (or reload plugins) so the bundled `linkedin` MCP server sta
 
 - Access to the inBeat Notion workspace.
 - Their own LinkedIn login for the bundled LinkedIn MCP.
+- The ColdIQ connector, if they'll add lead lists that only have the raw export.
 - `uv` / `uvx` and `python3` installed.
 
 ## Layout

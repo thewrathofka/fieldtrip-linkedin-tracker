@@ -17,6 +17,8 @@ A run reads the page, adds anyone new from the lead lists to the database, then 
 
 **First run:** it asks who you are, checks that your LinkedIn is connected, and adds you to `Users`. If there's no lead list on the page yet, it asks you to add one.
 
+**Raw export only?** If a lead list has just the raw CSV, the run asks before spending ColdIQ credits, finds LinkedIn URLs, and builds HeyReach-ready CSVs (`[Webinar] attended.csv`, `[Webinar] no show.csv`). It attaches them to the same lead-list block. Unsure matches are shown to you to confirm.
+
 **`LinkedIn enriched successfully?`** is Yes when the person is in the HeyReach-ready CSV (so they have a LinkedIn URL), No when they're only in the raw export.
 
 ## Safety
@@ -24,4 +26,5 @@ A run reads the page, adds anyone new from the lead lists to the database, then 
 - **Read-only on LinkedIn, enforced by code.** `hooks/linkedin_guard.py` runs before every LinkedIn MCP call and refuses anything that isn't one of: `get_inbox`, `get_conversation`, `search_conversations`, `get_person_profile`, `get_my_profile`, `get_session_status`, `close_session`. `send_message`, `connect_with_person`, searches and everything else are blocked.
 - The guard matches any MCP tool with "linkedin" in its name, so while this plugin is installed it also keeps other LinkedIn MCP servers read-only.
 - Conversations with people who aren't on a lead list are never opened.
+- ColdIQ lookups cost credits, so it always asks first.
 - On any LinkedIn CAPTCHA, checkpoint or login problem, it stops and hands off.

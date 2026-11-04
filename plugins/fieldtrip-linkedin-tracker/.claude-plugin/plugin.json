@@ -1,7 +1,7 @@
 {
   "name": "fieldtrip-linkedin-tracker",
   "version": "0.1.0",
-  "description": "Fieldtrip webinar-lead LinkedIn tracker. Reads the shared Webinar Leads Notion page, then checks your LinkedIn inbox (read-only) for conversations with anyone on its lead lists. Marks who connected and replied, @mentions you on new replies, and logs the run. Never sends anything on LinkedIn.",
+  "description": "Fieldtrip webinar-lead LinkedIn tracker. Reads the shared Webinar Leads Notion page, then checks your LinkedIn inbox (read-only) for conversations with anyone on its lead lists. Marks who connected and replied, @mentions you on new replies, and logs the run. If a lead list has only the raw export, it finds LinkedIn URLs with ColdIQ (after asking) and builds HeyReach-ready CSVs. Never sends anything on LinkedIn.",
   "author": {
     "name": "Katarina Misovic"
   },
@@ -10,6 +10,7 @@
     "notion",
     "webinar",
     "heyreach",
+    "coldiq",
     "lead tracker",
     "sales"
   ]

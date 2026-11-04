@@ -1,5 +1,5 @@
 ---
-description: Reads the shared Webinar Leads Notion page, then checks your LinkedIn inbox (read-only) for conversations with anyone on its lead lists. Marks who connected and replied, @mentions you on new replies, and logs the run. Never sends anything on LinkedIn.
+description: Reads the shared Webinar Leads Notion page, then checks your LinkedIn inbox (read-only) for conversations with anyone on its lead lists. Marks who connected and replied, @mentions you on new replies, and logs the run. If a lead list has only the raw export, it finds LinkedIn URLs with ColdIQ (after asking) and builds HeyReach-ready CSVs. Never sends anything on LinkedIn.
 ---
 
 Run the workflow in `${CLAUDE_PLUGIN_ROOT}/skills/fieldtrip-linkedin-tracker/SKILL.md`.
