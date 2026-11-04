@@ -29,9 +29,9 @@ Page **"Webinar Leads LinkedIn Tracking"** — `40ea9e8a2ea3800489d5fef6a5c396dd
 
 ```
 ## Lead lists                     ← one block per webinar / campaign
-   Name of Webinar: …
-   Name of Campaign: …
-   Lists: raw CSV + HeyReach-ready CSV attached
+   Name of Webinar: … (date)          e.g. Creator Ads + Compliance for Health Brands (Oct 28, 2026)
+   Name of Campaign: …                e.g. Health Webinar Attended, Health Webinar No Show
+   Lists: raw CSV(s) + attended / no-show lists + HeyReach-ready CSV
 ---
 Webinar Leads   (inline database)  collection://40ea9e8a-2ea3-8016-8d7c-000b0c035b22
 Run log         (inline database)  collection://58da442e-545b-4619-8cdd-f68740772864
@@ -45,10 +45,10 @@ A lead-list block can hold several CSVs. Campaigns that aren't tied to a webinar
 |---|---|---|
 | Name of prospect | Title | Full name |
 | LinkedIn enriched successfully? | Select (Yes, No) | **Yes** if the person is in the HeyReach-ready CSV (has a LinkedIn URL); **No** if they're only in the raw CSV. Set when the person is added. |
-| Webinar name | Multi-select | From the lead-list block's `Name of Webinar` |
-| Webinar date | Date | Only if the user gives it; otherwise blank |
-| Name of campaign | Multi-select | From the lead-list block's `Name of Campaign` |
-| Status | Multi-select (Invited, Registered, Attended, No show) | From the raw CSV when it says so clearly (e.g. Riverside `participated` true → Registered + Attended, false → Registered + No show). Otherwise blank. |
+| Webinar name | Multi-select | From the lead-list block's `Name of Webinar` (e.g. `Creator Ads + Compliance for Health Brands`) |
+| Webinar date | Date | The date in the block's `Name of Webinar` line, for everyone on that webinar's lists; otherwise ask, or leave blank |
+| Campaigns | Multi-select | The HeyReach campaign(s) the person is in, from the block's `Name of Campaign`: attended list → the "… Attended" campaign, no-show list → the "… No Show" campaign (e.g. `Health Webinar Attended`, `Finance Webinar No show`). A person on several lists gets several. |
+| Status | Select (Attended, No show; Registered and Invited kept for future campaigns) | **Attended** if they're on any attended list, otherwise **No show**. Don't use Registered/Invited for webinar lists. |
 | Users | Select | Whose LinkedIn reaches out to this lead |
 | Company | Text | From the CSVs |
 | Title | Text | From the HeyReach CSV (`Job Title`, else `Headline`); updated if LinkedIn shows a newer one |
@@ -57,6 +57,7 @@ A lead-list block can hold several CSVs. Campaigns that aren't tied to a webinar
 | Last message from | Select (Prospect, User) | Inbox check, every run: who sent the newest message |
 | Latest reply | Text | Inbox check, every run: one-line gist of the prospect's newest message |
 | Replied? / Date replied | Checkbox / Date | Inbox check: the prospect has messaged → replied, dated by their first message |
+| Connection request sent? / Date connection request sent | Checkbox / Date | **Not filled by this plugin** — filled in v2 via another connector (e.g. HeyReach). Never write to these. |
 | URL LinkedIn | URL | From the HeyReach CSV `Profile URL` |
 | Email | Email | From the CSVs |
 
@@ -87,7 +88,7 @@ A lead-list block can hold several CSVs. Campaigns that aren't tied to a webinar
 Do this for any lead list on the page whose people aren't in Webinar Leads yet, and whenever the user asks to **add more**.
 
 **Adding a new list (user asks to add more, or first run with no list):**
-1. Ask for the **Name of Webinar** (blank if none), the **Name of Campaign**, the CSV files (the raw export, plus the HeyReach-ready CSV if they already have one), and whose leads these are (`Users`, default: the person running it).
+1. Ask for the **Name of Webinar** and its **date** (blank if none), the **Name of Campaign** (one per list: attended / no show), the CSV files (the raw export, plus the HeyReach-ready CSV if they already have one), and whose leads these are (`Users`, default: the person running it).
 2. Add a block under **Lead lists**, newest first, in the same format as the others, and attach the CSVs (`notion-create-file-upload`, then a file block). If a block for the same webinar and campaign already exists, attach the CSVs there instead.
 
 **Tell the files apart** by their headers. The HeyReach-ready CSV has `Profile URL, First Name, Last Name, Full Name, Headline, Email Address, Job Title, Location, Company, Company URL`. The other one is the raw export (e.g. a Riverside registrant export). If it's unclear, ask.
@@ -110,8 +111,8 @@ Do this for any lead list on the page whose people aren't in Webinar Leads yet, 
    - Not found → **No**.
    - Someone in the HeyReach CSV but not in the raw CSV → add them with **Yes** and flag it.
    - If there's only a HeyReach CSV, everyone is **Yes**.
-3. Fill `Webinar name`, `Name of campaign`, `Status` (see table), `Users`, `Email`, `Company`. Add any new `Webinar name` / `Name of campaign` options first.
-4. **Don't create duplicates.** If the person already has a row (same LinkedIn URL, else same email), add the new webinar/campaign/status tags to that row instead.
+3. Fill `Webinar name`, `Webinar date`, `Campaigns`, `Status` (see table), `Users`, `Email`, `Company`. Add any new `Webinar name` / `Campaigns` options first (list every existing option so none are removed). Which people count is decided by the attended / no-show lists; raw-export rows not on either list are skipped and flagged.
+4. **Don't create duplicates.** If the person already has a row (same LinkedIn URL, else same email), add the new webinar and campaign tags to that row instead, and set Status to Attended if they attended any webinar.
 5. Skip obvious test or junk rows (unapproved, placeholder names like "first last", internal Fieldtrip emails) and list them in `Flags`. When unsure, ask.
 
 ### Step 4 — Read the inbox
@@ -135,7 +136,7 @@ How to read a thread: every connection request goes out **with a note**. When th
 - If `Users` is blank, set it to the person running this. If it's set to someone else, don't change it; flag it.
 - If the lead had no `URL LinkedIn` (matched by name), fill it from the conversation's participant profile.
 - If LinkedIn shows a newer title or company, update `Title` / `Company`.
-- Never change `Webinar name`, `Name of campaign`, `Status`, or `LinkedIn enriched successfully?` here.
+- Never change `Webinar name`, `Webinar date`, `Campaigns`, `Status`, `LinkedIn enriched successfully?`, or the connection-request properties here.
 
 ### Step 6 — Log the run
 Add a Run log row: `Run` = `{User} · {date time}`, `Run date` = now (with time), `User`, `Leads added`, `Inbox threads checked`, `Matched to lead list`, `New connections`, `New replies`, `Flags`.
@@ -154,4 +155,4 @@ The run only reads LinkedIn and writes Notion, so it can be scheduled (e.g. once
 
 ## Planned for later
 
-Lead ranking, persona qualification, a better way to fill `Status`, and Pipedrive sync.
+Lead ranking, persona qualification, filling `Connection request sent?` / `Date connection request sent` from another connector (e.g. HeyReach), using `Registered` / `Invited` for non-webinar campaigns, and Pipedrive sync.
