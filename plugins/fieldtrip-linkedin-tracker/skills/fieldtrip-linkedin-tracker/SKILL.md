@@ -52,15 +52,17 @@ A lead-list block can hold several CSVs. Campaigns that aren't tied to a webinar
 | Users | Select | Whose LinkedIn reaches out to this lead |
 | Company | Text | From the CSVs |
 | Title | Text | From the HeyReach CSV (`Job Title`, else `Headline`); updated if LinkedIn shows a newer one |
-| Connected? / Date connected | Checkbox / Date | Set by the inbox check |
-| Last message date | Date | Latest message in the thread |
-| Replied? / Date replied | Checkbox / Date | Set by the inbox check |
+| Connected? / Date connected | Checkbox / Date | Inbox check: the user's connection note is in the thread → connected, dated by that message |
+| Last message date | Date | Inbox check, every run: newest message in the thread |
+| Last message from | Select (Prospect, User) | Inbox check, every run: who sent the newest message |
+| Latest reply | Text | Inbox check, every run: one-line gist of the prospect's newest message |
+| Replied? / Date replied | Checkbox / Date | Inbox check: the prospect has messaged → replied, dated by their first message |
 | URL LinkedIn | URL | From the HeyReach CSV `Profile URL` |
 | Email | Email | From the CSVs |
 
 ### Run log — properties
 
-`Run` (title, e.g. `Kat · 2026-11-04 17:20`), `Run date` (date + time), `User` (select), `Leads added`, `Inbox threads checked`, `Matched to lead list`, `New connections`, `New replies` (numbers), `Flags` (text: anything a human should look at).
+`Run` (title, e.g. `Kat · 2026-11-04 17:20`), `Run date` (date + time), `User` (select), `Leads added`, `Inbox threads checked`, `Matched to lead list`, `New connections` (leads newly connected this run), `New replies` (leads with new prospect messages since the last run) (numbers), `Flags` (text: anything a human should look at).
 
 ## Steps
 
@@ -111,16 +113,25 @@ Do this for any lead list on the page whose people aren't in Webinar Leads yet, 
 5. Skip obvious test or junk rows (unapproved, placeholder names like "first last", internal Fieldtrip emails) and list them in `Flags`. When unsure, ask.
 
 ### Step 4 — Read the inbox
-1. `get_inbox` with a high enough limit to cover everything since the last run. Say if the result looks cut off.
+The inbox is what this plugin tracks. **Every run re-checks every matched conversation**; anything new since the last run is new data for the database.
+1. `get_inbox` with a high enough limit to reach back past the last run's `Run date` (on a first run, as far as it goes). Say if the result looks cut off.
 2. Match every thread's participant against **all** Webinar Leads rows: LinkedIn username (from `URL LinkedIn`) first, then exact full name. Name-only matches with more than one candidate → flag; don't open.
 3. **No match → skip it. Don't open or store anything** (Hard rule 2). Only count it.
-4. **Match → `get_conversation`.** Check every matched lead, and look for what's **new since the last run** (messages dated after the last `Run date`; on a first run, everything).
+4. **Match → `get_conversation`** and read the whole thread for that lead.
 
-### Step 5 — Update the matched rows
-- **Connected?** A thread with them exists (they accepted). If not already set: `Connected?` = true, `Date connected` = today.
-- **Replied?** They've sent a message. If `Replied?` was false: set it true, `Date replied` = date of their first reply, and **post a comment on the row @mentioning the person running this** (their Notion user id): "Replied on LinkedIn — <one-line gist>." If they already had `Replied?` but sent **new** messages since the last run, post a short "New reply since last run — <gist>" @mention too.
-- **Last message date** = date of the latest message.
+### Step 5 — Update the matched rows (every run, every matched lead)
+How to read a thread: every connection request goes out **with a note**. When the person accepts, that note appears in the inbox as the first message in the thread, sent by the user. So:
+
+- **Connected.** The thread's first message is the user's connection note → `Connected?` = true, and **`Date connected` = the date of that first message** (the day the note landed in the inbox is the day they accepted). Never use the run date. If `Date connected` is already set, leave it.
+- **Not replied yet.** The thread has only the user's message(s) and nothing from the prospect → `Replied?` stays false.
+- **Replied.** The prospect has sent at least one message → `Replied?` = true, **`Date replied` = the date of the prospect's first message** (from the thread, not the run date).
+- **Every run, for every matched lead, refresh:**
+  - `Last message date` = date of the newest message in the thread.
+  - `Last message from` = **Prospect** or **User**, whoever sent the newest message.
+  - `Latest reply` = a one-line gist of the prospect's newest message (Hard rule 6: gist only, never the full text). Blank until they reply.
+- **@mention on new prospect messages.** If the prospect sent anything dated after the last run's `Run date` (on a first run: anything at all), post a comment on the row @mentioning the person running this (their Notion user id): "New LinkedIn reply — <one-line gist>." One comment per run per lead, covering all their new messages. No comment when nothing new came from them.
 - If `Users` is blank, set it to the person running this. If it's set to someone else, don't change it; flag it.
+- If the lead had no `URL LinkedIn` (matched by name), fill it from the conversation's participant profile.
 - If LinkedIn shows a newer title or company, update `Title` / `Company`.
 - Never change `Webinar name`, `Name of campaign`, `Status`, or `LinkedIn enriched successfully?` here.
 
