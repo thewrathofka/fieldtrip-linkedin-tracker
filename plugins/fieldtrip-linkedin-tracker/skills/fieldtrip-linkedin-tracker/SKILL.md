@@ -69,7 +69,9 @@ A lead-list block can hold several CSVs. Campaigns that aren't tied to a webinar
 ### Step 1 — Read the Notion page first
 1. Fetch the page. Read every block under **Lead lists**: Name of Webinar, Name of Campaign, and the attached CSVs (`notion-get-file-download-urls` to download them).
 2. Query the **Run log**. Find the newest row overall and the newest row for each user. Its `Run date` is the **last run**.
-3. Query **Webinar Leads** for every row (all users, all lists).
+3. Query **Webinar Leads** for every row (all users, all lists). Ignore completely empty rows.
+
+**How to query:** the inBeat workspace isn't on Notion's Business plan, so SQL queries (`notion-query-data-sources` in `sql` mode) are refused. Use **view mode** instead: fetch each database to get its view URL (`view://…`), then `notion-query-data-sources` with `{"mode": "view", "view_url": …}`, following `next_cursor` until `has_more` is false. Filter and sort the rows yourself.
 
 ### Step 2 — Who is running this?
 - Notion: `notion-get-users` with `user_id: "self"` → name, email, Notion user id.
