@@ -8,7 +8,7 @@ Each run:
 2. If a lead list has only the raw export, finds LinkedIn URLs with ColdIQ (after asking, since it costs credits) and builds HeyReach-ready CSVs: `[Webinar] attended.csv` and `[Webinar] no show.csv`.
 3. Adds anyone from the lead lists who isn't in the database yet, marking whether their LinkedIn was found (`LinkedIn enriched successfully?`).
 4. Reads **your** LinkedIn inbox, read-only, and opens only conversations with people on those lead lists.
-5. Marks who connected and who replied, @mentions you on new replies, and writes a Run log row.
+5. Marks who connected and who replied, copies the full conversation onto each connected lead's page (refreshed every run), @mentions you on new replies, and writes a Run log row.
 
 It never sends anything on LinkedIn. People send connection requests and messages themselves (or through HeyReach).
 
