@@ -1,6 +1,6 @@
 ---
 name: fieldtrip-linkedin-tracker
-description: Fieldtrip webinar-lead LinkedIn tracker. Reads the shared "Webinar Leads LinkedIn Tracking" Notion page (lead lists at the top, Webinar Leads database, Run log), then reads the running user's LinkedIn inbox (read-only) and looks for conversations with anyone on any lead list stored on that page. Updates Connected? / Replied? / dates, copies the full conversation onto each connected lead's page (refreshed every run), @mentions the user on new replies, and logs the run. On a user's first run it registers them in the Users property; it also adds people from new lead lists to the database. When a lead list has only a raw export, it finds LinkedIn URLs with ColdIQ (after asking) and builds HeyReach-ready CSVs ("[Webinar] attended" / "[Webinar] no show"). Moves Status to Interested or Call booked from the conversation. Never sends anything on LinkedIn. Use when someone runs "/fieldtrip-linkedin-tracker".
+description: Fieldtrip webinar-lead LinkedIn tracker. Reads the shared "Webinar Leads LinkedIn Tracking" Notion page (lead lists at the top, Webinar Leads database, Run log), then reads the running user's LinkedIn inbox (read-only) and looks for conversations with anyone on any lead list stored on that page. Updates Connected? / Replied? / dates, copies the full conversation onto each connected lead's page (refreshed every run), @mentions the user on new replies, and logs the run. On a user's first run it registers them in the Users property; it also adds people from new lead lists to the database. When a lead list has only a raw export, it finds LinkedIn URLs with ColdIQ (after asking) and builds HeyReach-ready CSVs ("[Webinar] attended" / "[Webinar] no show"). Tags Status with Interested or Call booked (next to Attended / No show) from the conversation. Never sends anything on LinkedIn. Use when someone runs "/fieldtrip-linkedin-tracker".
 ---
 
 # /fieldtrip-linkedin-tracker — Webinar Leads LinkedIn Tracker
@@ -48,7 +48,7 @@ A lead-list block can hold several CSVs. Campaigns that aren't tied to a webinar
 | Webinar name | Multi-select | From the lead-list block's `Name of Webinar` (e.g. `Creator Ads + Compliance for Health Brands`) |
 | Webinar date | Date | The date in the block's `Name of Webinar` line, for everyone on that webinar's lists; otherwise ask, or leave blank |
 | Campaigns | Multi-select | The HeyReach campaign(s) the person is in, from the block's `Name of Campaign`: attended list → the "… Attended" campaign, no-show list → the "… No Show" campaign (e.g. `Health Webinar Attended`, `Finance Webinar No show`). A person on several lists gets several. |
-| Status | Select (Attended, No show, Interested, Call booked, SQL, CW, CL; Registered and Invited kept for future campaigns) | When added: **Attended** if they're on any attended list, otherwise **No show**. Don't use Registered/Invited for webinar lists. After that the inbox check moves it along the pipeline (**Interested** → **Call booked**) from the conversation (Step 5). **SQL**, **CW** (closed won) and **CL** (closed lost) are set by hand only. Once Status has left Attended/No show, the `Campaigns` tags are what still show attendance. |
+| Status | Multi-select (Registered, Attended, No show, Interested, Call booked, CW, CL, Invited) | Two kinds of tag on one row. **Attendance** (exactly one): **Registered** before attendance is known, then **Attended** if they're on any attended list, otherwise **No show** (replaces Registered). **Pipeline** (added on top, never replacing attendance): **Interested** or **Call booked**, from the conversation (Step 5); **CW** (closed won) and **CL** (closed lost) are set by hand only. `Invited` is kept for future non-webinar campaigns. Always write the full list of tags (read the row first so none are lost). |
 | Users | Select | Whose LinkedIn reaches out to this lead |
 | Company | Text | From the CSVs |
 | Title | Text | From the HeyReach CSV (`Job Title`, else `Headline`); updated if LinkedIn shows a newer one |
@@ -112,7 +112,7 @@ Do this for any lead list on the page whose people aren't in Webinar Leads yet, 
    - Someone in the HeyReach CSV but not in the raw CSV → add them with **Yes** and flag it.
    - If there's only a HeyReach CSV, everyone is **Yes**.
 3. Fill `Webinar name`, `Webinar date`, `Campaigns`, `Status` (see table), `Users`, `Email`, `Company`. Add any new `Webinar name` / `Campaigns` options first (list every existing option so none are removed). Which people count is decided by the attended / no-show lists; raw-export rows not on either list are skipped and flagged.
-4. **Don't create duplicates.** If the person already has a row (same LinkedIn URL, else same email), add the new webinar and campaign tags to that row instead, and set Status to Attended if they attended any webinar (only while Status is still No show; never overwrite a pipeline status like Interested or Call booked).
+4. **Don't create duplicates.** If the person already has a row (same LinkedIn URL, else same email), add the new webinar and campaign tags to that row instead, and if they attended any webinar, swap the attendance tag in Status to Attended (keep any pipeline tags like Interested or Call booked).
 5. Skip obvious test or junk rows (unapproved, placeholder names like "first last", internal Fieldtrip emails) and list them in `Flags`. When unsure, ask.
 
 ### Step 4 — Read the inbox
@@ -157,20 +157,20 @@ How to read a thread: every connection request goes out **with a note**. When th
 - If `Users` is blank, set it to the person running this. If it's set to someone else, don't change it; flag it.
 - If the lead had no `URL LinkedIn` (matched by name), fill it from the conversation's participant profile.
 - If LinkedIn shows a newer title or company, update `Title` / `Company`.
-- **Status from the conversation (every run, every matched lead).** Read the whole thread and move `Status` forward along the pipeline: Attended / No show → **Interested** → **Call booked**.
+- **Status from the conversation (every run, every matched lead).** Read the whole thread and set the pipeline tag in `Status`, next to the attendance tag (Attended / No show), which stays: none → **Interested** → **Call booked**. A row holds at most one of these two: Call booked replaces Interested (e.g. `[Attended, Call booked]`).
   - **Interested:** the prospect has said they want to talk, meet, or hear more (e.g. "happy to chat", "send me some slots", proposes times), but no specific time is agreed yet.
   - **Call booked:** a specific day and time is agreed in the thread: one side proposes a slot and the other confirms it (e.g. the prospect offers times and the user replies "Tuesday 3pm works, sending an invite"). A calendar invite mentioned for a named slot counts. A vague "next week" does not.
-  - Only ever move forward, never back. Never set **SQL**, **CW** or **CL**, and never change a row that's already on one of them; those are set by hand.
+  - Only ever move forward, never back. Never set **CW** or **CL**, and never change the pipeline tag on a row that already has one of them; those are set by hand.
   - If the thread shows a booked call was cancelled or the prospect has backed out, don't change Status; flag it.
   - When unsure (polite thanks, "interesting", no sign they want to talk), leave Status as it is.
   - Add the change to that lead's @mention comment when there is one (e.g. "Status set to Call booked."), and list every Status change in the Run log `Flags` and the chat report.
 - Never change `Webinar name`, `Webinar date`, `Campaigns`, `LinkedIn enriched successfully?`, or the connection-request properties here.
 
 ### Step 6 — Log the run
-Add a Run log row: `Run` = `{User} · {date time}`, `Run date` = now (with time), `User`, `Leads added`, `Inbox threads checked`, `Matched to lead list`, `New connections`, `New replies`, `Flags`. Mention in `Flags` how many lead pages had their conversation copied or refreshed this run (e.g. `Conversations synced: 4`), and every Status change (e.g. `Status: Francisco Umana Interested → Call booked`).
+Add a Run log row: `Run` = `{User} · {date time}`, `Run date` = now (with time), `User`, `Leads added`, `Inbox threads checked`, `Matched to lead list`, `New connections`, `New replies`, `Flags`. Mention in `Flags` how many lead pages had their conversation copied or refreshed this run (e.g. `Conversations synced: 4`), and every Status change (e.g. `Status: Francisco Umana + Call booked`).
 
 ### Step 7 — Report in chat
-Last run date, leads added, threads checked vs matched, new connections and replies (names and companies only, with the @mentions posted), how many lead pages had their conversation copied or refreshed, Status changes (name, old → new, and the agreed call time for Call booked), and anything flagged. Never paste message text.
+Last run date, leads added, threads checked vs matched, new connections and replies (names and companies only, with the @mentions posted), how many lead pages had their conversation copied or refreshed, Status changes (name, pipeline tag added, and the agreed call time for Call booked), and anything flagged. Never paste message text.
 
 ## Inputs
 
